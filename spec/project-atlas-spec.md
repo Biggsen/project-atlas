@@ -25,10 +25,14 @@ Project Atlas is a read-only Project Intelligence Layer that aggregates structur
 
 ## 3. Repository Project File Structure
 
-Each repo includes a file such as:
-- `tasks/project-summary.md`
-- `docs/project-summary.md`
-- Or similarly named
+Each repo includes a project summary file following the naming pattern:
+- `[project-name]-project-summary.md`
+
+Examples:
+- `tasks/vz-price-guide-project-summary.md`
+- `tasks/musicaid-project-summary.md`
+
+The exact path and filename are specified in `config/projects.json` (see section 9).
 
 ### 3.1 Manifest Block
 Found at the top of the file:
@@ -57,23 +61,25 @@ Found at the top of the file:
 ````
 
 ### 3.2 Semi-Structured Sections
-These sections follow predictable headings:
+The markdown file contains sections with headings (e.g., `## Project Overview`, `## Features (Done)`, `## Known Issues`).
 
-```
-## Project Overview
-## Tech Stack
-## Current Focus
-## Features (Done)
-## Features (In Progress)
-## Enhancements
-## Known Issues
-```
+The app uses a **type-agnostic parsing approach**:
+- Extracts all sections with their headings and content
+- Preserves the markdown structure (lists, paragraphs, etc.)
+- Identifies TODO items (`- [ ]` incomplete, `- [x]` completed) but doesn't force categorization
+- Does not categorize content into predefined types (features, bugs, todos, etc.)
 
-The app may optionally parse:
-- `- [ ]` TODO items  
-- `- [x]` completed items  
+This allows the content structure to evolve naturally without requiring rigid categorization. The dashboard can organize, filter, and display sections as needed.
 
-But this input is informational only.
+### 3.3 Template File
+A template file (`template/project-summary-template.md`) will be provided as a reference for the exact structure required by Project Atlas. This template includes:
+
+- Complete manifest block with all required fields and examples
+- Example section headings and structure
+- TODO item format examples
+- Comments explaining each part
+
+This template serves as the canonical reference for migrating existing project files to match the Atlas structure. Each repo can use this template as a guide when creating or updating their project summary file.
 
 ---
 
@@ -84,22 +90,37 @@ But this input is informational only.
   Pulls raw markdown files from GitHub using raw URLs or GitHub API.
 
 - **Parser**  
-  Extracts the manifest block, validates it, and optionally parses structured sections.
+  Extracts the manifest block, validates it against the schema, and parses markdown sections in a type-agnostic way, preserving structure without forcing categorization.
 
 - **Aggregator**  
-  Compiles all manifests into:
-  - `/data/projects/index.json`
-  - `/data/projects/<projectId>.json`
+  Compiles all manifests and writes JSON files to disk:
+  - `data/projects/index.json` - Combined array of all project manifests
+  - `data/projects/<projectId>.json` - Individual project manifest files
+  
+  Files are written relative to the project root. No database required.
 
 - **Dashboard UI**  
-  Read-only interface showing cross-project insights.
-
-- **Optional Cache Layer (No DB required initially)**  
-  Local storage of computed manifest JSON files.
+  Read-only interface that reads the generated JSON files from `data/projects/` to display cross-project insights.
 
 ---
 
-## 5. Manifest Schema (v1)
+## 5. Configuration
+
+### 5.1 GitHub Authentication
+Project Atlas requires a GitHub Personal Access Token to fetch project summary files.
+
+**Setup:**
+1. Create a token with `repo` scope (for private repos) or no scope needed (for public repos only)
+2. Store the token in an environment variable: `GITHUB_TOKEN`
+3. The app reads this token at runtime for all GitHub API requests
+
+**Rate Limits:**
+- Authenticated requests: 5,000 requests/hour
+- Unauthenticated: 60 requests/hour
+
+---
+
+## 6. Manifest Schema (v1)
 
 ```json
 {
@@ -107,7 +128,7 @@ But this input is informational only.
   "projectId": "string",
   "name": "string",
   "repo": "string",
-  "visibility": "public|staged|private",
+  "visibility": "public|staging|private",
   "status": "active|mvp|paused|archived",
   "domain": "minecraft|webapp|tool|other",
   "lastUpdated": "ISO date string",
@@ -120,31 +141,52 @@ But this input is informational only.
 }
 ```
 
-Future schema versions can expand with backward compatibility.
+### 6.1 Schema Versioning
+The system uses forward-compatible schema versioning:
+
+- **Current supported version**: v1
+- **Higher versions**: Manifests with `schemaVersion > 1` are accepted if they include all required v1 fields
+- **Validation**: Only v1 required fields are validated; additional fields in higher versions are preserved but ignored
+- **Backward compatibility**: Future schema versions must include all v1 fields to maintain compatibility
+
+This allows repos to adopt newer schema versions while older versions of Project Atlas continue to function.
 
 ---
 
-## 6. Aggregator Flow
+## 7. Aggregator Flow
 
 1. Load config of repos + paths (`config/projects.json`)
 2. For each project:
    - Fetch file from GitHub
    - Locate manifest start/end markers
-   - Parse JSON
-   - Validate against schema
+   - Parse manifest JSON
+   - Validate manifest against schema
+   - Parse markdown sections (type-agnostic, preserving structure)
+   - Combine manifest + parsed sections
    - Store result in memory
-3. Write output files:
-   - Combined index: array of all manifests
-   - Per-project manifest JSON files
-4. UI reads aggregated files
+3. Write JSON files to disk (`data/projects/` directory):
+   - `index.json`: Array containing all successfully parsed projects (manifest + parsed content)
+   - `<projectId>.json`: Individual project file with manifest + parsed content
+4. Dashboard UI reads the generated JSON files from `data/projects/`
 
-The system regenerates everything on demand or via scheduled/GitHub Action runs.
+The system regenerates all files on demand or via scheduled/GitHub Action runs. Files are overwritten on each aggregation run.
+
+### 7.1 Error Handling
+When errors occur during fetching or parsing, the system follows a **log and continue** strategy:
+
+- **Missing manifest blocks**: Log error with project ID, skip project, continue processing others
+- **Invalid JSON**: Log parsing error with project ID, skip project, continue processing others
+- **Schema validation failures**: Log validation errors with project ID, skip project, continue processing others
+- **Network failures**: Log network error with project ID, skip project, continue processing others
+- **Repo/file not found**: Log not found error with project ID, skip project, continue processing others
+
+All errors are logged with sufficient context (project ID, repo, path, error type) for debugging. The aggregation process completes successfully even if some projects fail, producing output files with only the successfully parsed projects.
 
 ---
 
-## 7. Dashboard Features (Read-Only)
+## 8. Dashboard Features (Read-Only)
 
-### 7.1 Global View
+### 8.1 Global View
 - List of all projects
 - Filters:
   - domain
@@ -155,13 +197,14 @@ The system regenerates everything on demand or via scheduled/GitHub Action runs.
   - completion %
   - alphabetical
 
-### 7.2 Per-Project View
+### 8.2 Per-Project View
 - Manifest details
-- Parsed features/issues (optional)
+- Parsed markdown sections (organized by heading, type-agnostic)
+- TODO items identified across all sections (completed and incomplete)
 - GitHub links to edit real files
-- Staleness indicator (time since last update)
+- Staleness indicator: Shows time since `lastUpdated`. Projects with `lastUpdated` older than 20 days are considered stale.
 
-### 7.3 Insights
+### 8.3 Insights
 - Drift detection (active but untouched)
 - Quick wins (small items across repos)
 - High-risk zones (many issues, low progress)
@@ -169,7 +212,7 @@ The system regenerates everything on demand or via scheduled/GitHub Action runs.
 
 ---
 
-## 8. Config Example (`config/projects.json`)
+## 9. Config Example (`config/projects.json`)
 
 ```json
 [
@@ -188,7 +231,7 @@ The system regenerates everything on demand or via scheduled/GitHub Action runs.
 
 ---
 
-## 9. Non-Goals (To Avoid To-Do-App Creep)
+## 10. Non-Goals (To Avoid To-Do-App Creep)
 - No task creation
 - No editing project data
 - No writing back to repos
@@ -200,16 +243,16 @@ This is intentionally a read-only intelligence layer.
 
 ---
 
-## 10. Roadmap (Minimal)
-- v1: Fetch → Parse → Aggregate → Display
-- v2: Optional parsing of structured sections
+## 11. Roadmap (Minimal)
+- v1: Fetch → Parse manifest + structured sections → Aggregate → Display
+- v2: Enhanced parsing (more section types, better TODO extraction)
 - v3: Optional cached DB (read-only index)
 - v4: Historical diffs (manifest snapshots over time)
 - v5: Plugin system for custom analytics
 
 ---
 
-## 11. License & Ownership
+## 12. License & Ownership
 This is a strictly personal developer tool.  
 All data is sourced from private or public repos you own.  
 No external dependencies on proprietary task systems.
