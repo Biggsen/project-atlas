@@ -1,0 +1,25 @@
+{
+  "name": "project-atlas-aggregator",
+  "version": "1.0.0",
+  "description": "Backend aggregator for Project Atlas - fetches, parses, and aggregates project summary files from GitHub",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": ["project-atlas", "aggregator", "github"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.1",
+    "ajv": "^8.17.1",
+    "remark": "^15.0.1",
+    "remark-parse": "^11.0.0"
+  }
+}
