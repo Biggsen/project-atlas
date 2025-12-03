@@ -2,6 +2,8 @@ import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 import type { Root, Heading, ListItem, Text, Paragraph } from 'mdast';
 import { Manifest, ParsedSection, WorkItem, WorkItemType, ParsedProject } from './types';
+
+export type { ParsedProject, ParsedSection, WorkItem, Manifest };
 import { validateManifest } from './validator';
 
 const MANIFEST_START = '<!-- PROJECT-MANIFEST:START -->';
@@ -126,8 +128,26 @@ export async function parseMarkdownSections(
   const allWorkItems: WorkItem[] = [];
 
   let currentSection: ParsedSection | null = null;
+  const processedNodes = new Set<any>();
 
-  visit(tree, (node: any) => {
+  visit(tree, (node: any, index: number | undefined, parent: any) => {
+    // Skip text nodes (they're extracted as part of their parent)
+    if (node.type === 'text') {
+      return;
+    }
+    // Skip if parent is a list (we process lists as a whole)
+    if (parent && parent.type === 'list') {
+      return;
+    }
+    // Skip if parent is a listItem (we process listItems as part of lists)
+    if (parent && parent.type === 'listItem') {
+      return;
+    }
+    // Skip inline nodes that are children of other block nodes
+    if (['emphasis', 'strong', 'inlineCode', 'link', 'image', 'code'].includes(node.type) && parent && parent.type !== 'root') {
+      return;
+    }
+
     if (node.type === 'heading') {
       const heading = node as Heading;
       const headingText = extractHeadingText(heading);
@@ -154,16 +174,17 @@ export async function parseMarkdownSections(
         // Subheading - add to current section content
         currentSection.content += '#'.repeat(heading.depth) + ' ' + headingText + '\n\n';
       }
-    } else if (currentSection && node.type === 'paragraph') {
+    } else if (currentSection && node.type === 'paragraph' && parent && parent.type !== 'listItem') {
+      // Only process paragraphs that are direct children of sections (not inside lists)
       const paragraph = node as Paragraph;
       const text = extractTextFromNode(paragraph);
-      if (text) {
+      if (text && text.trim()) {
         currentSection.content += text + '\n\n';
       }
     } else if (currentSection && node.type === 'list') {
       // Extract list items and check for TODOs
       const listContent = extractListContent(node);
-      currentSection.content += listContent + '\n\n';
+      currentSection.content += listContent;
 
       // Extract TODO items from this list
       const workItemType = getWorkItemType(currentSection.heading);
@@ -172,10 +193,15 @@ export async function parseMarkdownSections(
         currentSection.workItems.push(...todos);
         allWorkItems.push(...todos);
       }
-    } else if (currentSection) {
-      // Collect other content (but not headings)
+    } else if (currentSection && node.type === 'code') {
+      // Handle code blocks
+      const codeContent = (node as any).value || '';
+      const lang = (node as any).lang || '';
+      currentSection.content += '```' + lang + '\n' + codeContent + '\n```\n\n';
+    } else if (currentSection && node.type !== 'heading' && parent && parent.type !== 'listItem') {
+      // Collect other block-level content (but not if inside a listItem)
       const text = extractTextFromNode(node);
-      if (text) {
+      if (text && text.trim()) {
         currentSection.content += text + '\n\n';
       }
     }
@@ -229,20 +255,34 @@ function extractListContent(node: any): string {
         const listItem = item as ListItem;
         let itemText = '- ';
         
-        // Check if it's a TODO item
-        if (listItem.children[0]?.type === 'paragraph') {
-          const para = listItem.children[0];
-          if (para.children[0]?.type === 'text') {
-            const text = (para.children[0] as Text).value;
-            if (text.match(/^\[([ x])\]/)) {
-              itemText += text;
+        // Extract text from list item
+        if (listItem.children && listItem.children.length > 0) {
+          const firstChild = listItem.children[0];
+          if (firstChild.type === 'paragraph') {
+            const para = firstChild;
+            // Check if first text node is a TODO marker
+            if (para.children && para.children.length > 0 && para.children[0].type === 'text') {
+              const text = (para.children[0] as Text).value;
+              if (text.match(/^\[([ x])\]/)) {
+                itemText += text;
+                // Add rest of paragraph text if any
+                if (para.children.length > 1) {
+                  for (let i = 1; i < para.children.length; i++) {
+                    itemText += extractTextFromNode(para.children[i]);
+                  }
+                }
+              } else {
+                itemText += extractTextFromNode(para);
+              }
             } else {
               itemText += extractTextFromNode(para);
             }
+          } else {
+            itemText += extractTextFromNode(firstChild);
           }
         }
         
-        content += itemText + '\n';
+        content += itemText.trim() + '\n';
       }
     }
   }

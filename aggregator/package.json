@@ -8,7 +8,11 @@
     "start": "ts-node src/index.ts",
     "dev": "ts-node src/index.ts"
   },
-  "keywords": ["project-atlas", "aggregator", "github"],
+  "keywords": [
+    "project-atlas",
+    "aggregator",
+    "github"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -19,7 +23,9 @@
   "dependencies": {
     "@octokit/rest": "^22.0.1",
     "ajv": "^8.17.1",
+    "mdast-util-to-string": "^4.0.0",
     "remark": "^15.0.1",
-    "remark-parse": "^11.0.0"
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0"
   }
 }

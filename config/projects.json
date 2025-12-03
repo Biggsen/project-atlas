@@ -1,8 +1,18 @@
 [
   {
-    "projectId": "example-project",
-    "repo": "owner/repo-name",
-    "path": "tasks/example-project-summary.md"
+    "projectId": "mc-map-generator",
+    "repo": "Biggsen/mc-map-generator",
+    "path": "spec/reference/mc-map-generator-project-summary-converted.md"
+  },
+  {
+    "projectId": "musicaid",
+    "repo": "Biggsen/musicaidv2",
+    "path": "spec/reference/musicaid-project-summary-converted.md"
+  },
+  {
+    "projectId": "region-forge",
+    "repo": "Biggsen/region-forge",
+    "path": "spec/reference/region-forge-project-summary-converted.md"
   }
 ]
 
