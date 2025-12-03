@@ -32,7 +32,7 @@ Examples:
 - `tasks/vz-price-guide-project-summary.md`
 - `tasks/musicaid-project-summary.md`
 
-The exact path and filename are specified in `config/projects.json` (see section 9).
+The exact path and filename are specified in `config/projects.json` (see section 10).
 
 ### 3.1 Manifest Block
 Found at the top of the file:
@@ -81,6 +81,8 @@ A template file (`template/project-summary-template.md`) will be provided as a r
 
 This template serves as the canonical reference for migrating existing project files to match the Atlas structure. Each repo can use this template as a guide when creating or updating their project summary file.
 
+**Reference Files**: During template creation, 6 existing project summary files will be imported into this project as reference material. These reference files will be analyzed to identify common patterns, structural variations, and standardization needs, ensuring the template accurately reflects real-world project file structures.
+
 ---
 
 ## 4. Project Atlas Architecture
@@ -104,9 +106,26 @@ This template serves as the canonical reference for migrating existing project f
 
 ---
 
-## 5. Configuration
+## 5. Tech Stack
 
-### 5.1 GitHub Authentication
+### 5.1 Backend (Aggregator)
+- **Runtime**: Node.js with TypeScript
+- **GitHub API**: `@octokit/rest`
+- **Markdown Parsing**: `remark` or `marked`
+- **JSON Schema Validation**: `ajv` or similar
+- **CLI**: Command-line tool that runs on-demand or via scheduled tasks
+
+### 5.2 Frontend (Dashboard)
+- **Framework**: Svelte
+- **Build Tool**: Vite
+- **Data Source**: Reads static JSON files from `data/projects/`
+- **No Backend Required**: Pure client-side application
+
+---
+
+## 6. Configuration
+
+### 6.1 GitHub Authentication
 Project Atlas requires a GitHub Personal Access Token to fetch project summary files.
 
 **Setup:**
@@ -120,7 +139,7 @@ Project Atlas requires a GitHub Personal Access Token to fetch project summary f
 
 ---
 
-## 6. Manifest Schema (v1)
+## 7. Manifest Schema (v1)
 
 ```json
 {
@@ -141,7 +160,7 @@ Project Atlas requires a GitHub Personal Access Token to fetch project summary f
 }
 ```
 
-### 6.1 Schema Versioning
+### 7.1 Schema Versioning
 The system uses forward-compatible schema versioning:
 
 - **Current supported version**: v1
@@ -153,7 +172,7 @@ This allows repos to adopt newer schema versions while older versions of Project
 
 ---
 
-## 7. Aggregator Flow
+## 8. Aggregator Flow
 
 1. Load config of repos + paths (`config/projects.json`)
 2. For each project:
@@ -171,7 +190,7 @@ This allows repos to adopt newer schema versions while older versions of Project
 
 The system regenerates all files on demand or via scheduled/GitHub Action runs. Files are overwritten on each aggregation run.
 
-### 7.1 Error Handling
+### 8.1 Error Handling
 When errors occur during fetching or parsing, the system follows a **log and continue** strategy:
 
 - **Missing manifest blocks**: Log error with project ID, skip project, continue processing others
@@ -184,9 +203,9 @@ All errors are logged with sufficient context (project ID, repo, path, error typ
 
 ---
 
-## 8. Dashboard Features (Read-Only)
+## 9. Dashboard Features (Read-Only)
 
-### 8.1 Global View
+### 9.1 Global View
 - List of all projects
 - Filters:
   - domain
@@ -197,14 +216,14 @@ All errors are logged with sufficient context (project ID, repo, path, error typ
   - completion %
   - alphabetical
 
-### 8.2 Per-Project View
+### 9.2 Per-Project View
 - Manifest details
 - Parsed markdown sections (organized by heading, type-agnostic)
 - TODO items identified across all sections (completed and incomplete)
 - GitHub links to edit real files
 - Staleness indicator: Shows time since `lastUpdated`. Projects with `lastUpdated` older than 20 days are considered stale.
 
-### 8.3 Insights
+### 9.3 Insights
 - Drift detection (active but untouched)
 - Quick wins (small items across repos)
 - High-risk zones (many issues, low progress)
@@ -212,7 +231,7 @@ All errors are logged with sufficient context (project ID, repo, path, error typ
 
 ---
 
-## 9. Config Example (`config/projects.json`)
+## 10. Config Example (`config/projects.json`)
 
 ```json
 [
@@ -231,7 +250,7 @@ All errors are logged with sufficient context (project ID, repo, path, error typ
 
 ---
 
-## 10. Non-Goals (To Avoid To-Do-App Creep)
+## 11. Non-Goals (To Avoid To-Do-App Creep)
 - No task creation
 - No editing project data
 - No writing back to repos
@@ -243,7 +262,7 @@ This is intentionally a read-only intelligence layer.
 
 ---
 
-## 11. Roadmap (Minimal)
+## 12. Roadmap (Minimal)
 - v1: Fetch → Parse manifest + structured sections → Aggregate → Display
 - v2: Enhanced parsing (more section types, better TODO extraction)
 - v3: Optional cached DB (read-only index)
@@ -252,7 +271,7 @@ This is intentionally a read-only intelligence layer.
 
 ---
 
-## 12. License & Ownership
+## 13. License & Ownership
 This is a strictly personal developer tool.  
 All data is sourced from private or public repos you own.  
 No external dependencies on proprietary task systems.
