@@ -1,5 +1,10 @@
 [
   {
+    "projectId": "project-atlas",
+    "repo": "Biggsen/project-atlas",
+    "path": "tasks/project-atlas-project-summary.md"
+  },
+  {
     "projectId": "mc-map-generator",
     "repo": "Biggsen/mc-map-generator",
     "path": "tasks/mc-map-generator-project-summary.md"
