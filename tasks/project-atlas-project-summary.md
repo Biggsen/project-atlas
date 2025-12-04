@@ -5,14 +5,14 @@
   "projectId": "project-atlas",
   "name": "Project Atlas",
   "repo": "Biggsen/project-atlas",
-  "visibility": "private",
+  "visibility": "staging",
   "status": "active",
   "domain": "management",
   "type": "tool",
   "lastUpdated": "2025-12-04",
   "links": {
     "prod": null,
-    "staging": null
+    "staging": "https://biggsen.github.io/project-atlas/"
   },
   "tags": ["tool", "typescript", "svelte", "project-management", "github", "dashboard"]
 }
@@ -44,7 +44,7 @@
 - **Markdown Parsing**: remark
 - **Schema Validation**: ajv
 - **Build Tool**: Vite
-- **Deployment**: Not yet deployed
+- **Deployment**: GitHub Pages (staging)
 
 ### Key Dependencies
 
@@ -55,9 +55,8 @@
 
 ## Current Focus
 
-Project Atlas v1 is complete. Current focus is on deployment and additional utility features:
+Project Atlas v1 is complete. Current focus is on additional utility features:
 - Implement Refresh API for on-demand data updates
-- Deploy dashboard to hosting platform (depends on Refresh API)
 - Documentation and usage guides
 
 ---
@@ -87,6 +86,7 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 - [x] Cross-project unified work items view with "Show done" toggle
 - [x] Refresh API specification created
 - [x] Export all projects functionality (CLI and dashboard)
+- [x] Static deployment to GitHub Pages
 
 ### Detailed Completed Features
 
@@ -115,6 +115,12 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 - Dashboard export button with markdown download
 - Includes all project manifests, work items, sections, and summary statistics
 
+#### Deployment
+- GitHub Pages static deployment
+- GitHub Actions workflow for automated builds
+- Data files automatically copied during build process
+- Staging environment: https://biggsen.github.io/project-atlas/
+
 ---
 
 ## Outstanding Tasks
@@ -126,9 +132,10 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
   - Add file copying after aggregation
   - Add frontend "Refresh Data" button
   - Implement loading states and error handling
-- [ ] Deploy app to hosting platform (depends on Refresh API - see `tasks/deploy-app.md`)
+- [ ] Deploy app with Refresh API (see `tasks/deploy-app.md`)
   - Must support Node.js runtime (Vercel, Netlify Functions, Railway, etc.)
   - Configure environment variables and CORS
+  - Note: Static deployment to GitHub Pages is complete
 
 ### Medium Priority
 
@@ -152,8 +159,8 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 ## Project Status
 
 **Overall Status**: Active (v1 Complete)  
-**Completion**: ~95% (v1 feature complete, deployment pending)  
-**Last Major Update**: January 2025
+**Completion**: ~98% (v1 feature complete, static deployment complete)  
+**Last Major Update**: December 2025
 
 ### Metrics
 
@@ -173,10 +180,10 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
    - Backend Express server with aggregation endpoint
    - Frontend refresh button and data reload
    - File copying and error handling
-2. Deploy dashboard to hosting platform (after Refresh API)
+2. Deploy with Refresh API (optional enhancement)
    - Choose platform supporting Node.js
-   - Configure build and environment variables
-3. Test deployment and Refresh API in production
+   - Configure environment variables and CORS
+3. Test Refresh API in production (if implemented)
 
 ### Short-term (Next 1-3 months)
 
