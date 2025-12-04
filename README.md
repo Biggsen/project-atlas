@@ -184,7 +184,7 @@ project-atlas/
 ## Documentation
 
 - [Specification](./spec/project-atlas-spec.md) - Complete system specification
-- [Implementation Guide](./spec/implementation.md) - Step-by-step implementation plan
+- [Implementation Guide](./spec/completed/implementation.md) - Completed implementation plan (v1)
 - [Project Summary Template](./template/project-summary-template.md) - Template for project summary files
 
 ## License
