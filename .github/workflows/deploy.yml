@@ -26,15 +26,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: |
-            aggregator/package-lock.json
-            dashboard/package-lock.json
+
+      - name: Cache aggregator dependencies
+        uses: actions/cache@v4
+        with:
+          path: aggregator/node_modules
+          key: ${{ runner.os }}-npm-aggregator-${{ hashFiles('aggregator/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-aggregator-
 
       - name: Install aggregator dependencies
         run: |
           cd aggregator
           npm ci
+
+      - name: Cache dashboard dependencies
+        uses: actions/cache@v4
+        with:
+          path: dashboard/node_modules
+          key: ${{ runner.os }}-npm-dashboard-${{ hashFiles('dashboard/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-dashboard-
 
       - name: Install dashboard dependencies
         run: |
