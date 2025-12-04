@@ -232,7 +232,6 @@ All errors are logged with sufficient context (project ID, repo, path, error typ
 - Manifest details
 - Work items organized by type (Features, Enhancements, Bugs, Tasks)
 - TODO items identified across all sections (completed and incomplete)
-- GitHub links to edit real files
 - Staleness indicator: Shows time since `lastUpdated`. Projects with `lastUpdated` older than 20 days are considered stale.
 
 ### 9.3 Insights

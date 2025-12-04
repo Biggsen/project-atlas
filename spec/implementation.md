@@ -219,7 +219,6 @@ project-atlas/
    - Display parsed markdown sections (organized by heading)
    - Display TODO items (grouped by complete/incomplete)
    - Show staleness indicator (20+ days = stale)
-   - Add GitHub links to edit source files
 3. Style the detailed view
 
 **Deliverable**: Complete per-project view

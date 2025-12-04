@@ -26,6 +26,9 @@
     ? project.workItems.filter((w) => filterWorkItemType === 'all' || w.type === filterWorkItemType)
     : [];
 
+  $: completedWorkItems = filteredWorkItems.filter((w) => w.completed);
+  $: incompleteWorkItems = filteredWorkItems.filter((w) => !w.completed);
+
   $: workItemsByType = project
     ? {
         features: project.workItems.filter((w) => w.type === 'features'),
@@ -131,20 +134,41 @@
       </div>
 
       <div class="work-items-list">
-        {#each filteredWorkItems as item (item.content + item.section)}
-          <div class="work-item" class:completed={item.completed}>
-            <div class="work-item-header">
-              <span class="work-item-type" class:type-features={item.type === 'features'} class:type-enhancements={item.type === 'enhancements'} class:type-bugs={item.type === 'bugs'} class:type-tasks={item.type === 'tasks'}>
-                {item.type}
-              </span>
-              <span class="work-item-status">
-                {item.completed ? '✅' : '⏳'}
-              </span>
-            </div>
-            <div class="work-item-content">{item.content}</div>
-            <div class="work-item-section">{item.section}</div>
+        {#if incompleteWorkItems.length > 0}
+          <div class="work-items-group">
+            <h3 class="group-header">Incomplete ({incompleteWorkItems.length})</h3>
+            {#each incompleteWorkItems as item (item.content + item.section)}
+              <div class="work-item">
+                <div class="work-item-header">
+                  <span class="work-item-type" class:type-features={item.type === 'features'} class:type-enhancements={item.type === 'enhancements'} class:type-bugs={item.type === 'bugs'} class:type-tasks={item.type === 'tasks'}>
+                    {item.type}
+                  </span>
+                  <span class="work-item-status">⏳</span>
+                </div>
+                <div class="work-item-content">{item.content}</div>
+                <div class="work-item-section">{item.section}</div>
+              </div>
+            {/each}
           </div>
-        {/each}
+        {/if}
+
+        {#if completedWorkItems.length > 0}
+          <div class="work-items-group">
+            <h3 class="group-header">Completed ({completedWorkItems.length})</h3>
+            {#each completedWorkItems as item (item.content + item.section)}
+              <div class="work-item completed">
+                <div class="work-item-header">
+                  <span class="work-item-type" class:type-features={item.type === 'features'} class:type-enhancements={item.type === 'enhancements'} class:type-bugs={item.type === 'bugs'} class:type-tasks={item.type === 'tasks'}>
+                    {item.type}
+                  </span>
+                  <span class="work-item-status">✅</span>
+                </div>
+                <div class="work-item-content">{item.content}</div>
+                <div class="work-item-section">{item.section}</div>
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
 
       {#if filteredWorkItems.length === 0}
@@ -340,7 +364,22 @@
   .work-items-list {
     display: flex;
     flex-direction: column;
+    gap: 2rem;
+  }
+
+  .work-items-group {
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
+  }
+
+  .group-header {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 0.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e0e0e0;
   }
 
   .work-item {
