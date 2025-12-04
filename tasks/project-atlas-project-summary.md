@@ -5,11 +5,11 @@
   "projectId": "project-atlas",
   "name": "Project Atlas",
   "repo": "Biggsen/project-atlas",
-  "visibility": "public",
+  "visibility": "private",
   "status": "active",
   "domain": "management",
   "type": "tool",
-  "lastUpdated": "2025-01-12",
+  "lastUpdated": "2025-12-04",
   "links": {
     "prod": null,
     "staging": null
