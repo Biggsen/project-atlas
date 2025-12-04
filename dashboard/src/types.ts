@@ -43,6 +43,9 @@ export interface ProjectSummary {
   manifest: Manifest;
   workItemsSummary: {
     total: number;
+    completed: number;
+    incomplete: number;
+    completionPercentage: number;
     byType: {
       features: number;
       enhancements: number;

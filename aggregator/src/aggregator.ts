@@ -117,18 +117,27 @@ export function writeAggregatedData(
   }
 
   // Write index.json - array of all projects
-  const indexData = projects.map((project) => ({
-    manifest: project.manifest,
-    workItemsSummary: {
-      total: project.workItems.length,
-      byType: {
-        features: project.workItems.filter((w: WorkItem) => w.type === 'features').length,
-        enhancements: project.workItems.filter((w: WorkItem) => w.type === 'enhancements').length,
-        bugs: project.workItems.filter((w: WorkItem) => w.type === 'bugs').length,
-        tasks: project.workItems.filter((w: WorkItem) => w.type === 'tasks').length,
+  const indexData = projects.map((project) => {
+    const completedCount = project.workItems.filter((w: WorkItem) => w.completed).length;
+    const totalCount = project.workItems.length;
+    const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    return {
+      manifest: project.manifest,
+      workItemsSummary: {
+        total: totalCount,
+        completed: completedCount,
+        incomplete: totalCount - completedCount,
+        completionPercentage: completionPercentage,
+        byType: {
+          features: project.workItems.filter((w: WorkItem) => w.type === 'features').length,
+          enhancements: project.workItems.filter((w: WorkItem) => w.type === 'enhancements').length,
+          bugs: project.workItems.filter((w: WorkItem) => w.type === 'bugs').length,
+          tasks: project.workItems.filter((w: WorkItem) => w.type === 'tasks').length,
+        },
       },
-    },
-  }));
+    };
+  });
 
   const indexPath = path.join(outputDir, 'index.json');
   fs.writeFileSync(indexPath, JSON.stringify(indexData, null, 2), 'utf-8');

@@ -8,6 +8,7 @@
   let filterDomain: string = 'all';
   let filterType: string = 'all';
   let filterStatus: string = 'all';
+  let filterVisibility: string = 'all';
   let sortBy: string = 'name';
 
   $: filteredProjects = projects
@@ -15,6 +16,7 @@
       if (filterDomain !== 'all' && p.manifest.domain !== filterDomain) return false;
       if (filterType !== 'all' && p.manifest.type !== filterType) return false;
       if (filterStatus !== 'all' && p.manifest.status !== filterStatus) return false;
+      if (filterVisibility !== 'all' && p.manifest.visibility !== filterVisibility) return false;
       return true;
     })
     .sort((a, b) => {
@@ -25,6 +27,8 @@
           return new Date(b.manifest.lastUpdated).getTime() - new Date(a.manifest.lastUpdated).getTime();
         case 'totalWorkItems':
           return b.workItemsSummary.total - a.workItemsSummary.total;
+        case 'completionPercentage':
+          return b.workItemsSummary.completionPercentage - a.workItemsSummary.completionPercentage;
         default:
           return 0;
       }
@@ -33,6 +37,19 @@
   $: domains = [...new Set(projects.map((p) => p.manifest.domain))].sort();
   $: types = [...new Set(projects.map((p) => p.manifest.type))].sort();
   $: statuses = [...new Set(projects.map((p) => p.manifest.status))].sort();
+  $: visibilities = [...new Set(projects.map((p) => p.manifest.visibility))].sort();
+
+  // Helper function to get completion percentage (with fallback for old data)
+  function getCompletionPercentage(project: ProjectSummary): number {
+    if (project.workItemsSummary.completionPercentage !== undefined) {
+      return project.workItemsSummary.completionPercentage;
+    }
+    // Fallback: calculate from completed/incomplete if available
+    if (project.workItemsSummary.completed !== undefined && project.workItemsSummary.total > 0) {
+      return Math.round((project.workItemsSummary.completed / project.workItemsSummary.total) * 100);
+    }
+    return 0;
+  }
 </script>
 
 <div class="project-list">
@@ -68,11 +85,22 @@
     </div>
 
     <div class="filter-group">
+      <label for="visibility">Visibility:</label>
+      <select id="visibility" bind:value={filterVisibility}>
+        <option value="all">All</option>
+        {#each visibilities as visibility}
+          <option value={visibility}>{visibility}</option>
+        {/each}
+      </select>
+    </div>
+
+    <div class="filter-group">
       <label for="sort">Sort by:</label>
       <select id="sort" bind:value={sortBy}>
         <option value="name">Name</option>
         <option value="lastUpdated">Last Updated</option>
         <option value="totalWorkItems">Work Items</option>
+        <option value="completionPercentage">Completion %</option>
       </select>
     </div>
   </div>
@@ -109,6 +137,11 @@
         <div class="work-items-summary">
           <div class="work-item-count">
             <strong>{project.workItemsSummary.total}</strong> total
+            {#if project.workItemsSummary.total > 0}
+              <span class="completion-percentage">
+                {project.workItemsSummary.completionPercentage}% complete
+              </span>
+            {/if}
           </div>
           <div class="work-item-breakdown">
             <span>Features: {project.workItemsSummary.byType.features}</span>
@@ -259,6 +292,19 @@
   .work-item-count {
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .completion-percentage {
+    padding: 0.25rem 0.5rem;
+    background: #e3f2fd;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #1976d2;
+    font-weight: 500;
   }
 
   .work-item-breakdown {
