@@ -30,6 +30,7 @@ copyDataFiles()
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.GITHUB_PAGES ? '/project-atlas/' : '/',
   plugins: [
     svelte(),
     {
