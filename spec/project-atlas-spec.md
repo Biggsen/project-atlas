@@ -227,19 +227,23 @@ All errors are logged with sufficient context (project ID, repo, path, error typ
 - Sorting:
   - last updated
   - alphabetical
+  - total work items
+  - completion percentage
 
 ### 9.2 Per-Project View
 - Manifest details
 - Work items organized by type (Features, Enhancements, Bugs, Tasks)
-- TODO items identified across all sections (completed and incomplete)
+- Work items grouped by completion status (Incomplete and Completed sections)
+- Filter by work item type
 - Staleness indicator: Shows time since `lastUpdated`. Projects with `lastUpdated` older than 20 days are considered stale.
 
 ### 9.3 Insights
-- Drift detection (active but untouched)
-- Quick wins (small items across repos)
-- High-risk zones (many bugs, low progress)
-- Cross-project work item aggregation (all features, all bugs, etc.)
-- Release readiness
+- **Overview Statistics**: Total projects, work items, completion counts, breakdown by type and status
+- **Drift Detection**: Active projects that haven't been updated in 20+ days
+- **Quick Wins**: Projects with few incomplete items (≤5) and good progress (≥50%)
+- **High-Risk Zones**: Projects with many bugs (≥3) and low completion (<70%)
+- **Release Ready**: Projects with high completion (≥80%) and few bugs (<3)
+- **Cross-Project Work Item Aggregation**: Unified view showing all work items from all projects, organized by type (Features, Enhancements, Bugs, Tasks). Includes toggle to show/hide completed items.
 
 ---
 
@@ -274,8 +278,15 @@ This is intentionally a read-only intelligence layer.
 
 ---
 
-## 12. Roadmap (Minimal)
-- v1: Fetch → Parse manifest + structured sections → Aggregate → Display
+## 12. Roadmap
+
+### v1 (✅ Complete)
+- ✅ Fetch → Parse manifest + structured sections → Aggregate → Display
+- ✅ Dashboard with filtering, sorting, and insights
+- ✅ Cross-project work item aggregation
+- ✅ Responsive design and error handling
+
+### Future Versions
 - v2: Enhanced parsing (more section types, better TODO extraction)
 - v3: Optional cached DB (read-only index)
 - v4: Historical diffs (manifest snapshots over time)
