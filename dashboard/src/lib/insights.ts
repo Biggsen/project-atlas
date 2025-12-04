@@ -1,4 +1,4 @@
-import type { ProjectSummary, ParsedProject } from '../types';
+import type { ProjectSummary, ParsedProject, WorkItem } from '../types';
 import { isStale } from './api';
 
 export interface DriftProject {
@@ -50,12 +50,26 @@ export interface CrossProjectAggregation {
   };
 }
 
+export interface CrossProjectWorkItem {
+  item: WorkItem;
+  projectId: string;
+  projectName: string;
+}
+
+export interface UnifiedWorkItems {
+  features: CrossProjectWorkItem[];
+  enhancements: CrossProjectWorkItem[];
+  bugs: CrossProjectWorkItem[];
+  tasks: CrossProjectWorkItem[];
+}
+
 export interface Insights {
   drift: DriftProject[];
   quickWins: QuickWin[];
   highRisk: HighRiskProject[];
   releaseReady: ReleaseReadyProject[];
   aggregation: CrossProjectAggregation;
+  unifiedWorkItems: UnifiedWorkItems;
 }
 
 /**
@@ -192,6 +206,60 @@ export function calculateAggregation(projects: ProjectSummary[]): CrossProjectAg
 }
 
 /**
+ * Aggregate work items across all projects by type
+ */
+export function aggregateUnifiedWorkItems(projects: ParsedProject[]): UnifiedWorkItems {
+  const unified: UnifiedWorkItems = {
+    features: [],
+    enhancements: [],
+    bugs: [],
+    tasks: [],
+  };
+
+  for (const project of projects) {
+    for (const workItem of project.workItems) {
+      const crossProjectItem: CrossProjectWorkItem = {
+        item: workItem,
+        projectId: project.manifest.projectId,
+        projectName: project.manifest.name,
+      };
+
+      switch (workItem.type) {
+        case 'features':
+          unified.features.push(crossProjectItem);
+          break;
+        case 'enhancements':
+          unified.enhancements.push(crossProjectItem);
+          break;
+        case 'bugs':
+          unified.bugs.push(crossProjectItem);
+          break;
+        case 'tasks':
+          unified.tasks.push(crossProjectItem);
+          break;
+      }
+    }
+  }
+
+  // Sort each type by completion status (incomplete first), then by project name
+  const sortItems = (items: CrossProjectWorkItem[]) => {
+    return items.sort((a, b) => {
+      if (a.item.completed !== b.item.completed) {
+        return a.item.completed ? 1 : -1;
+      }
+      return a.projectName.localeCompare(b.projectName);
+    });
+  };
+
+  unified.features = sortItems(unified.features);
+  unified.enhancements = sortItems(unified.enhancements);
+  unified.bugs = sortItems(unified.bugs);
+  unified.tasks = sortItems(unified.tasks);
+
+  return unified;
+}
+
+/**
  * Calculate all insights from projects
  */
 export function calculateInsights(projects: ProjectSummary[]): Insights {
@@ -201,6 +269,32 @@ export function calculateInsights(projects: ProjectSummary[]): Insights {
     highRisk: calculateHighRisk(projects),
     releaseReady: calculateReleaseReady(projects),
     aggregation: calculateAggregation(projects),
+    unifiedWorkItems: {
+      features: [],
+      enhancements: [],
+      bugs: [],
+      tasks: [],
+    },
+  };
+}
+
+/**
+ * Calculate insights including unified work items (requires full project data)
+ */
+export async function calculateInsightsWithUnified(
+  projectSummaries: ProjectSummary[],
+  loadAllProjectsFn: (projectIds: string[]) => Promise<ParsedProject[]>
+): Promise<Insights> {
+  const projectIds = projectSummaries.map((p) => p.manifest.projectId);
+  const allProjects = await loadAllProjectsFn(projectIds);
+
+  return {
+    drift: calculateDrift(projectSummaries),
+    quickWins: calculateQuickWins(projectSummaries),
+    highRisk: calculateHighRisk(projectSummaries),
+    releaseReady: calculateReleaseReady(projectSummaries),
+    aggregation: calculateAggregation(projectSummaries),
+    unifiedWorkItems: aggregateUnifiedWorkItems(allProjects),
   };
 }
 

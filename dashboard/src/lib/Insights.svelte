@@ -1,11 +1,28 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { ProjectSummary } from '../types';
-  import { calculateInsights, type Insights } from './insights';
+  import { calculateInsights, calculateInsightsWithUnified, type Insights } from './insights';
+  import { loadAllProjects } from './api';
 
-  export let projects: ProjectSummary[];
+  export let projects: ProjectSummary[] = [];
   export let onSelectProject: (projectId: string) => void;
 
-  $: insights = calculateInsights(projects);
+  let insights: Insights = calculateInsights(projects);
+  let loadingUnified = false;
+  let showUnified = false;
+  let showCompleted = false;
+
+  onMount(async () => {
+    // Load unified work items on mount
+    loadingUnified = true;
+    try {
+      insights = await calculateInsightsWithUnified(projects, loadAllProjects);
+    } catch (error) {
+      console.error('Failed to load unified work items:', error);
+    } finally {
+      loadingUnified = false;
+    }
+  });
 </script>
 
 <div class="insights">
@@ -195,6 +212,158 @@
       </div>
     {:else}
       <div class="no-insights">No projects are currently release-ready.</div>
+    {/if}
+  </div>
+
+  <div class="insight-section">
+    <div class="section-header">
+      <h3>📋 Cross-Project Work Items</h3>
+      <div class="section-controls">
+        {#if showUnified}
+          <label class="checkbox-label">
+            <input type="checkbox" bind:checked={showCompleted} />
+            <span>Show done</span>
+          </label>
+        {/if}
+        <button
+          class="toggle-button"
+          on:click={() => (showUnified = !showUnified)}
+          disabled={loadingUnified}
+        >
+          {showUnified ? 'Hide' : 'Show'} Unified View
+        </button>
+      </div>
+    </div>
+    <p class="insight-description">All work items from all projects, organized by type</p>
+
+    {#if loadingUnified}
+      <div class="loading-unified">Loading work items...</div>
+    {:else if showUnified}
+      <div class="unified-work-items">
+        <div class="work-items-type-section">
+          <h4>Features ({showCompleted ? insights.unifiedWorkItems.features.length : insights.unifiedWorkItems.features.filter(({ item }) => !item.completed).length})</h4>
+          {#if insights.unifiedWorkItems.features.length > 0}
+            <div class="unified-items-list">
+              {#each insights.unifiedWorkItems.features.filter(({ item }) => showCompleted || !item.completed) as { item, projectId, projectName }}
+                <div
+                  class="unified-item"
+                  class:completed={item.completed}
+                  on:click={() => onSelectProject(projectId)}
+                  role="button"
+                  tabindex="0"
+                  on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectProject(projectId);
+                    }
+                  }}
+                >
+                  <div class="unified-item-header">
+                    <span class="unified-item-status">{item.completed ? '✅' : '⏳'}</span>
+                    <span class="unified-item-project">{projectName}</span>
+                  </div>
+                  <div class="unified-item-content">{item.content}</div>
+                  <div class="unified-item-section">{item.section}</div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="no-items">No features found across all projects.</div>
+          {/if}
+        </div>
+
+        <div class="work-items-type-section">
+          <h4>Enhancements ({showCompleted ? insights.unifiedWorkItems.enhancements.length : insights.unifiedWorkItems.enhancements.filter(({ item }) => !item.completed).length})</h4>
+          {#if insights.unifiedWorkItems.enhancements.length > 0}
+            <div class="unified-items-list">
+              {#each insights.unifiedWorkItems.enhancements.filter(({ item }) => showCompleted || !item.completed) as { item, projectId, projectName }}
+                <div
+                  class="unified-item"
+                  class:completed={item.completed}
+                  on:click={() => onSelectProject(projectId)}
+                  role="button"
+                  tabindex="0"
+                  on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectProject(projectId);
+                    }
+                  }}
+                >
+                  <div class="unified-item-header">
+                    <span class="unified-item-status">{item.completed ? '✅' : '⏳'}</span>
+                    <span class="unified-item-project">{projectName}</span>
+                  </div>
+                  <div class="unified-item-content">{item.content}</div>
+                  <div class="unified-item-section">{item.section}</div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="no-items">No enhancements found across all projects.</div>
+          {/if}
+        </div>
+
+        <div class="work-items-type-section">
+          <h4>Bugs ({showCompleted ? insights.unifiedWorkItems.bugs.length : insights.unifiedWorkItems.bugs.filter(({ item }) => !item.completed).length})</h4>
+          {#if insights.unifiedWorkItems.bugs.length > 0}
+            <div class="unified-items-list">
+              {#each insights.unifiedWorkItems.bugs.filter(({ item }) => showCompleted || !item.completed) as { item, projectId, projectName }}
+                <div
+                  class="unified-item"
+                  class:completed={item.completed}
+                  on:click={() => onSelectProject(projectId)}
+                  role="button"
+                  tabindex="0"
+                  on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectProject(projectId);
+                    }
+                  }}
+                >
+                  <div class="unified-item-header">
+                    <span class="unified-item-status">{item.completed ? '✅' : '⏳'}</span>
+                    <span class="unified-item-project">{projectName}</span>
+                  </div>
+                  <div class="unified-item-content">{item.content}</div>
+                  <div class="unified-item-section">{item.section}</div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="no-items">No bugs found across all projects.</div>
+          {/if}
+        </div>
+
+        <div class="work-items-type-section">
+          <h4>Tasks ({showCompleted ? insights.unifiedWorkItems.tasks.length : insights.unifiedWorkItems.tasks.filter(({ item }) => !item.completed).length})</h4>
+          {#if insights.unifiedWorkItems.tasks.length > 0}
+            <div class="unified-items-list">
+              {#each insights.unifiedWorkItems.tasks.filter(({ item }) => showCompleted || !item.completed) as { item, projectId, projectName }}
+                <div
+                  class="unified-item"
+                  class:completed={item.completed}
+                  on:click={() => onSelectProject(projectId)}
+                  role="button"
+                  tabindex="0"
+                  on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectProject(projectId);
+                    }
+                  }}
+                >
+                  <div class="unified-item-header">
+                    <span class="unified-item-status">{item.completed ? '✅' : '⏳'}</span>
+                    <span class="unified-item-project">{projectName}</span>
+                  </div>
+                  <div class="unified-item-content">{item.content}</div>
+                  <div class="unified-item-section">{item.section}</div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="no-items">No tasks found across all projects.</div>
+          {/if}
+        </div>
+      </div>
     {/if}
   </div>
 </div>
@@ -416,6 +585,150 @@
     color: #999;
     background: #f5f5f5;
     border-radius: 8px;
+    font-style: italic;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .section-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #666;
+    user-select: none;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+  }
+
+  .toggle-button {
+    padding: 0.5rem 1rem;
+    background: #646cff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .toggle-button:hover:not(:disabled) {
+    background: #535bf2;
+  }
+
+  .toggle-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .loading-unified {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+  }
+
+  .unified-work-items {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .work-items-type-section {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .work-items-type-section h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    color: #1a1a1a;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .unified-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .unified-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .unified-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .unified-item:focus {
+    outline: 2px solid #646cff;
+    outline-offset: 2px;
+  }
+
+  .unified-item.completed {
+    opacity: 0.7;
+  }
+
+  .unified-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .unified-item-status {
+    font-size: 1.25rem;
+  }
+
+  .unified-item-project {
+    font-weight: 600;
+    color: #646cff;
+    font-size: 0.875rem;
+  }
+
+  .unified-item-content {
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .unified-item-section {
+    font-size: 0.75rem;
+    color: #999;
+    font-style: italic;
+  }
+
+  .no-items {
+    padding: 2rem;
+    text-align: center;
+    color: #999;
     font-style: italic;
   }
 </style>

@@ -25,6 +25,23 @@ export async function loadProject(projectId: string): Promise<ParsedProject> {
 }
 
 /**
+ * Load all projects (full data with work items)
+ */
+export async function loadAllProjects(projectIds: string[]): Promise<ParsedProject[]> {
+  const projects = await Promise.all(
+    projectIds.map(async (projectId) => {
+      try {
+        return await loadProject(projectId);
+      } catch (error) {
+        console.warn(`Failed to load project ${projectId}:`, error);
+        return null;
+      }
+    })
+  );
+  return projects.filter((p): p is ParsedProject => p !== null);
+}
+
+/**
  * Check if a project is stale (lastUpdated older than 20 days)
  */
 export function isStale(lastUpdated: string): boolean {
