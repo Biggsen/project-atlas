@@ -1,6 +1,6 @@
 import type { ParsedProject, ProjectSummary } from '../types';
 
-const DATA_BASE = '/projects';
+const DATA_BASE = `${import.meta.env.BASE_URL}projects`;
 
 /**
  * Load the project index
