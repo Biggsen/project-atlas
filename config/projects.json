@@ -2,22 +2,32 @@
   {
     "projectId": "mc-map-generator",
     "repo": "Biggsen/mc-map-generator",
-    "path": "mc-map-generator-project-summary.md"
+    "path": "tasks/mc-map-generator-project-summary.md"
   },
   {
     "projectId": "musicaid",
     "repo": "Biggsen/musicaidv2",
-    "path": "musicaid-project-summary.md"
+    "path": "tasks/musicaid-project-summary.md"
   },
   {
     "projectId": "region-forge",
     "repo": "Biggsen/region-forge",
-    "path": "region-forge-project-summary.md"
+    "path": "tasks/region-forge-project-summary.md"
   },
   {
     "projectId": "tunicious",
     "repo": "Biggsen/tunicious",
     "path": "tasks/tunicious-project-summary.md"
+  },
+  {
+    "projectId": "vz-price-guide-v2",
+    "repo": "Biggsen/vz-price-guide-v2",
+    "path": "tasks/vz-price-guide-project-summary.md"
+  },
+  {
+    "projectId": "mc-server-manager",
+    "repo": "Biggsen/mc-server-manager",
+    "path": "tasks/mc-server-manager-project-summary.md"
   }
 ]
 
