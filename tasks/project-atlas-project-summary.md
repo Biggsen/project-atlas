@@ -58,7 +58,6 @@
 Project Atlas v1 is complete. Current focus is on deployment and additional utility features:
 - Implement Refresh API for on-demand data updates
 - Deploy dashboard to hosting platform (depends on Refresh API)
-- Create export-all function for ChatGPT review
 - Documentation and usage guides
 
 ---
@@ -87,6 +86,7 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 - [x] Clickable home navigation
 - [x] Cross-project unified work items view with "Show done" toggle
 - [x] Refresh API specification created
+- [x] Export all projects functionality (CLI and dashboard)
 
 ### Detailed Completed Features
 
@@ -108,6 +108,12 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 - Cross-project unified work items view with toggle
 - Responsive layout for all screen sizes
 - Loading states and error messages
+- Export all projects to markdown (download functionality)
+
+#### Export Functionality
+- CLI export command (`npm run export`) generating `all-projects-summary.md`
+- Dashboard export button with markdown download
+- Includes all project manifests, work items, sections, and summary statistics
 
 ---
 
@@ -123,11 +129,9 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 - [ ] Deploy app to hosting platform (depends on Refresh API - see `tasks/deploy-app.md`)
   - Must support Node.js runtime (Vercel, Netlify Functions, Railway, etc.)
   - Configure environment variables and CORS
-- [ ] Create export-all function for generating single file with all project data (for ChatGPT review)
 
 ### Medium Priority
 
-- [ ] Add export functionality to dashboard UI
 - [ ] Performance optimization for large project sets
 - [ ] Add unit tests for aggregator
 - [ ] Add component tests for dashboard
@@ -172,15 +176,13 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 2. Deploy dashboard to hosting platform (after Refresh API)
    - Choose platform supporting Node.js
    - Configure build and environment variables
-3. Implement export-all function (CLI and/or UI)
-4. Test deployment and Refresh API in production
+3. Test deployment and Refresh API in production
 
 ### Short-term (Next 1-3 months)
 
 1. Set up automated aggregation (GitHub Actions)
 2. Add testing infrastructure
 3. Performance optimization
-4. Add export button to dashboard
 
 ### Long-term (3+ months)
 
