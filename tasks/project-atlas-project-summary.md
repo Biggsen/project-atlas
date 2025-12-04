@@ -56,7 +56,8 @@
 ## Current Focus
 
 Project Atlas v1 is complete. Current focus is on deployment and additional utility features:
-- Deploy dashboard to hosting platform
+- Implement Refresh API for on-demand data updates
+- Deploy dashboard to hosting platform (depends on Refresh API)
 - Create export-all function for ChatGPT review
 - Documentation and usage guides
 
@@ -84,6 +85,8 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 - [x] Completion percentage calculation and display
 - [x] Staleness indicators (20+ days since update)
 - [x] Clickable home navigation
+- [x] Cross-project unified work items view with "Show done" toggle
+- [x] Refresh API specification created
 
 ### Detailed Completed Features
 
@@ -112,16 +115,23 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 
 ### High Priority
 
-- [ ] Deploy app to hosting platform (Vercel, Netlify, etc.)
+- [ ] Implement Refresh API (see `spec/refresh-api-spec.md`)
+  - Create Express server with POST /api/aggregate endpoint
+  - Add file copying after aggregation
+  - Add frontend "Refresh Data" button
+  - Implement loading states and error handling
+- [ ] Deploy app to hosting platform (depends on Refresh API - see `tasks/deploy-app.md`)
+  - Must support Node.js runtime (Vercel, Netlify Functions, Railway, etc.)
+  - Configure environment variables and CORS
 - [ ] Create export-all function for generating single file with all project data (for ChatGPT review)
 
 ### Medium Priority
 
-- [ ] Set up automated aggregation runs (GitHub Actions, cron)
 - [ ] Add export functionality to dashboard UI
 - [ ] Performance optimization for large project sets
 - [ ] Add unit tests for aggregator
 - [ ] Add component tests for dashboard
+- [ ] Set up automated aggregation runs (GitHub Actions, cron) - optional if Refresh API works well
 
 ### Low Priority / Future
 
@@ -155,9 +165,15 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 
 ### Immediate (Next 1-2 weeks)
 
-1. Deploy dashboard to hosting platform
-2. Implement export-all function (CLI and/or UI)
-3. Test deployment and data file serving
+1. Implement Refresh API feature
+   - Backend Express server with aggregation endpoint
+   - Frontend refresh button and data reload
+   - File copying and error handling
+2. Deploy dashboard to hosting platform (after Refresh API)
+   - Choose platform supporting Node.js
+   - Configure build and environment variables
+3. Implement export-all function (CLI and/or UI)
+4. Test deployment and Refresh API in production
 
 ### Short-term (Next 1-3 months)
 
@@ -181,6 +197,7 @@ Project Atlas v1 is complete. Current focus is on deployment and additional util
 - **Design Philosophy**: Read-only intelligence layer - never modifies source repositories. All truth lives in the repos.
 - **Manifest Schema**: Uses forward-compatible versioning. Higher schema versions accepted if they include all v1 fields.
 - **Work Item Types**: Four defined types (Features, Enhancements, Bugs, Tasks) tagged by section heading - no inference needed.
+- **Refresh API**: Specification created for on-demand data updates via frontend button. Requires backend API server and affects deployment platform requirements (must support Node.js).
 - **Future Consideration**: May add database backend for performance with large project sets, but current static file approach works well for moderate scale.
 
 ---
