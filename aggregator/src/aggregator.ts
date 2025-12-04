@@ -3,6 +3,7 @@ import * as path from 'path';
 import { parseProjectFile } from './parser';
 import type { ParsedProject } from './parser';
 import type { WorkItem } from './types';
+import { fetchProjectFile } from './fetcher';
 
 export interface ProjectConfig {
   projectId: string;
@@ -32,8 +33,7 @@ export function loadConfig(configPath: string): ProjectConfig[] {
 }
 
 /**
- * Read project file from local filesystem (for testing without fetcher)
- * TODO: Replace with GitHub API fetcher in Phase 2
+ * Read project file from local filesystem (for testing/fallback)
  */
 export async function readProjectFile(filePath: string): Promise<string> {
   try {
@@ -58,34 +58,42 @@ export async function aggregateProjects(
 
   for (const projectConfig of config) {
     try {
-      // For now, read from converted reference files
-      // TODO: Replace with GitHub API fetcher
-      const filePath = path.join(basePath, 'spec/reference', `${projectConfig.projectId}-project-summary-converted.md`);
+      console.log(`  Fetching ${projectConfig.projectId} from ${projectConfig.repo}...`);
       
-      if (!fs.existsSync(filePath)) {
+      // Fetch from GitHub
+      const fetchResult = await fetchProjectFile(projectConfig.repo, projectConfig.path);
+      
+      if (!fetchResult.success || !fetchResult.content) {
         errors.push({
           projectId: projectConfig.projectId,
-          error: `File not found: ${filePath}`,
+          error: fetchResult.error || 'Failed to fetch file',
         });
+        console.log(`    ❌ ${fetchResult.error}`);
         continue;
       }
 
-      const content = await readProjectFile(filePath);
-      const result = await parseProjectFile(content);
+      console.log(`    ✅ Fetched successfully`);
+      
+      // Parse the content
+      const result = await parseProjectFile(fetchResult.content);
 
       if (result.success && result.project) {
         projects.push(result.project);
+        console.log(`    ✅ Parsed successfully`);
       } else {
         errors.push({
           projectId: projectConfig.projectId,
           error: result.error || 'Unknown parsing error',
         });
+        console.log(`    ❌ Parse error: ${result.error}`);
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       errors.push({
         projectId: projectConfig.projectId,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
       });
+      console.log(`    ❌ Error: ${errorMessage}`);
     }
   }
 
