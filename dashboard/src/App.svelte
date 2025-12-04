@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import type { ProjectSummary } from './types';
   import { loadProjectIndex } from './lib/api';
+  import { exportAllProjects } from './lib/export';
   import ProjectList from './lib/ProjectList.svelte';
   import ProjectView from './lib/ProjectView.svelte';
   import Insights from './lib/Insights.svelte';
@@ -11,6 +12,7 @@
   let error: string | null = null;
   let selectedProjectId: string | null = null;
   let currentView: 'list' | 'insights' = 'list';
+  let exporting = false;
 
   onMount(async () => {
     try {
@@ -39,16 +41,43 @@
     selectedProjectId = null;
     currentView = 'list';
   }
+
+  async function handleExport() {
+    if (projects.length === 0) return;
+    exporting = true;
+    try {
+      await exportAllProjects(projects);
+    } catch (e) {
+      console.error('Export failed:', e);
+      alert('Failed to export projects. Please try again.');
+    } finally {
+      exporting = false;
+    }
+  }
 </script>
 
 <main>
   <header>
-    <h1 class="home-link" on:click={handleHome} role="button" tabindex="0" on:keydown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        handleHome();
-      }
-    }}>Project Atlas</h1>
-    <p class="subtitle">Project Intelligence Dashboard</p>
+    <div class="header-content">
+      <div>
+        <h1 class="home-link" on:click={handleHome} role="button" tabindex="0" on:keydown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleHome();
+          }
+        }}>Project Atlas</h1>
+        <p class="subtitle">Project Intelligence Dashboard</p>
+      </div>
+      {#if !loading && !error && projects.length > 0}
+        <button
+          class="export-button"
+          on:click={handleExport}
+          disabled={exporting}
+          title="Export all projects to markdown"
+        >
+          {exporting ? 'Exporting...' : '📥 Export All'}
+        </button>
+      {/if}
+    </div>
   </header>
 
   {#if loading}
@@ -117,8 +146,63 @@
   }
 
   header {
-    text-align: center;
     margin-bottom: 2rem;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .header-content > div {
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .export-button {
+    background: #646cff;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .export-button:hover:not(:disabled) {
+    background: #535bf2;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+  }
+
+  .export-button:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .export-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+    }
+
+    .header-content > div {
+      text-align: center;
+    }
+
+    .export-button {
+      width: 100%;
+    }
   }
 
   h1 {
