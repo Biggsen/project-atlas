@@ -230,6 +230,25 @@
     margin-bottom: 1.5rem;
   }
 
+  @media (max-width: 768px) {
+    .aggregation-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .aggregation-details {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .insight-section {
+      margin-bottom: 2rem;
+    }
+
+    .insight-section h3 {
+      font-size: 1.25rem;
+    }
+  }
+
   .stat-card {
     background: white;
     border-radius: 8px;

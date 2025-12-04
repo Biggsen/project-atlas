@@ -41,7 +41,10 @@
 
 <div class="project-view">
   {#if loading}
-    <div class="loading">Loading project...</div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading project...</p>
+    </div>
   {:else if error}
     <div class="error">Error: {error}</div>
   {:else if project}
@@ -171,24 +174,41 @@
         {/if}
       </div>
 
-      {#if filteredWorkItems.length === 0}
-        <div class="no-items">No work items match the selected filter.</div>
+      {#if project.workItems.length === 0}
+        <div class="no-items">
+          <p>This project has no work items tracked yet.</p>
+        </div>
+      {:else if filteredWorkItems.length === 0}
+        <div class="no-items">
+          <p>No work items match the selected filter.</p>
+        </div>
       {/if}
     </div>
 
-    <div class="sections">
-      <h2>Sections</h2>
-      {#each project.sections as section}
-        <div class="section">
-          <h3>{section.heading}</h3>
-          <div class="section-content">
-            {#if section.content.trim()}
-              {@html marked.parse(section.content)}
-            {/if}
+    {#if project.sections && project.sections.length > 0}
+      <div class="sections">
+        <h2>Sections</h2>
+        {#each project.sections as section}
+          <div class="section">
+            <h3>{section.heading}</h3>
+            <div class="section-content">
+              {#if section.content && section.content.trim()}
+                {@html marked.parse(section.content)}
+              {:else}
+                <p class="empty-content">No content in this section.</p>
+              {/if}
+            </div>
           </div>
+        {/each}
+      </div>
+    {:else}
+      <div class="sections">
+        <h2>Sections</h2>
+        <div class="no-sections">
+          <p>This project has no sections available.</p>
         </div>
-      {/each}
-    </div>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -277,6 +297,40 @@
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .project-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .header-content h1 {
+      font-size: 1.5rem;
+    }
+
+    .header-meta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .project-info {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .work-items-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .work-items-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .work-items-header select {
+      width: 100%;
+    }
   }
 
   .info-section h2 {
@@ -519,21 +573,71 @@
     text-decoration: underline;
   }
 
-  .loading,
-  .error {
+  .loading {
     text-align: center;
-    padding: 2rem;
-    font-size: 1.2rem;
+    padding: 4rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
 
-  .error {
-    color: #d32f2f;
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #646cff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
   }
 
-  .no-items {
-    text-align: center;
-    padding: 2rem;
+  .loading p {
     color: #666;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .error {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #d32f2f;
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .error h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+  }
+
+  .no-items,
+  .no-sections {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #666;
+    background: #f5f5f5;
+    border-radius: 8px;
+  }
+
+  .no-items p,
+  .no-sections p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+
+  .empty-content {
+    color: #999;
+    font-style: italic;
+    font-size: 0.875rem;
   }
 </style>
 

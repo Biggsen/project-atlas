@@ -158,8 +158,16 @@
     {/each}
   </div>
 
-  {#if filteredProjects.length === 0}
-    <div class="no-results">No projects match the selected filters.</div>
+  {#if projects.length === 0}
+    <div class="empty-state">
+      <h3>📦 No Projects Found</h3>
+      <p>No projects have been loaded. Run the aggregator to fetch and parse project data.</p>
+    </div>
+  {:else if filteredProjects.length === 0}
+    <div class="no-results">
+      <h3>🔍 No Projects Match Filters</h3>
+      <p>Try adjusting your filter or sort options to see more projects.</p>
+    </div>
   {/if}
 </div>
 
@@ -198,6 +206,25 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .filters {
+      flex-direction: column;
+    }
+
+    .filter-group {
+      width: 100%;
+    }
+
+    .projects-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .project-card {
+      padding: 1rem;
+    }
   }
 
   .project-card {
@@ -326,10 +353,27 @@
     color: #999;
   }
 
-  .no-results {
+  .no-results,
+  .empty-state {
     text-align: center;
-    padding: 3rem;
+    padding: 4rem 2rem;
     color: #666;
+    background: #f5f5f5;
+    border-radius: 8px;
+    margin-top: 2rem;
+  }
+
+  .no-results h3,
+  .empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    color: #1a1a1a;
+  }
+
+  .no-results p,
+  .empty-state p {
+    margin: 0;
+    font-size: 0.875rem;
   }
 </style>
 

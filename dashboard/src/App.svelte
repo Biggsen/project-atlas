@@ -52,9 +52,16 @@
   </header>
 
   {#if loading}
-    <div class="loading">Loading projects...</div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading projects...</p>
+    </div>
   {:else if error}
-    <div class="error">Error: {error}</div>
+    <div class="error">
+      <h2>⚠️ Failed to Load Projects</h2>
+      <p>{error}</p>
+      <p class="error-hint">Make sure the aggregator has been run and data files exist in <code>data/projects/</code></p>
+    </div>
   {:else if selectedProjectId}
     <ProjectView projectId={selectedProjectId} onBack={handleBack} />
   {:else}
@@ -88,6 +95,25 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    main {
+      padding: 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .view-nav {
+      flex-wrap: wrap;
+    }
+
+    .nav-button {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
   }
 
   header {
@@ -151,14 +177,69 @@
     border-bottom-color: #646cff;
   }
 
-  .loading,
-  .error {
+  .loading {
     text-align: center;
-    padding: 2rem;
-    font-size: 1.2rem;
+    padding: 4rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #646cff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .loading p {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 0;
   }
 
   .error {
+    text-align: center;
+    padding: 3rem 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+  }
+
+  .error h2 {
+    color: #c62828;
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+  }
+
+  .error p {
     color: #d32f2f;
+    margin: 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  .error-hint {
+    color: #666 !important;
+    font-size: 0.875rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .error code {
+    background: #f5f5f5;
+    padding: 0.125rem 0.375rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
   }
 </style>
