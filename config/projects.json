@@ -33,6 +33,11 @@
     "projectId": "mc-server-manager",
     "repo": "Biggsen/mc-server-manager",
     "path": "tasks/mc-server-manager-project-summary.md"
+  },
+  {
+    "projectId": "music-pattern-maker",
+    "repo": "Biggsen/music-pattern-maker",
+    "path": "tasks/music-pattern-maker-project-summary.md"
   }
 ]
 
